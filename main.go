@@ -26,6 +26,7 @@ func main() {
 	r := gin.Default()
 	v1 := r.Group("/v1")
 	routes.AddAuthRoutes(v1, db.GetDB())
+	routes.AddUserRoutes(v1, db.GetDB())
 
 	err = r.Run()
 	if err != nil {
