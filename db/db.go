@@ -24,6 +24,8 @@ func (d *Database) Migrate() error {
 	return d.db.AutoMigrate(
 		&models.User{},
 		&models.Product{},
+		&models.ProductCategory{},
+		&models.ProductBrand{},
 		&models.Cart{},
 		&models.CartItem{},
 		&models.Order{},
