@@ -1,10 +1,9 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"simple_group_order/db"
 	"simple_group_order/routes"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -27,6 +26,7 @@ func main() {
 	v1 := r.Group("/v1")
 	routes.AddAuthRoutes(v1, db.GetDB())
 	routes.AddUserRoutes(v1, db.GetDB())
+	routes.AddProductRoutes(v1, db.GetDB())
 
 	err = r.Run()
 	if err != nil {
