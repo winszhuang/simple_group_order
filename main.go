@@ -27,6 +27,7 @@ func main() {
 	routes.AddAuthRoutes(v1, db.GetDB())
 	routes.AddUserRoutes(v1, db.GetDB())
 	routes.AddProductRoutes(v1, db.GetDB())
+	routes.AddCartRoutes(v1, db.GetDB())
 
 	err = r.Run()
 	if err != nil {
