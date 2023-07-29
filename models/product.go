@@ -10,7 +10,7 @@ type Product struct {
 	Image       string          `gorm:"text"`
 	CreatedAt   time.Time       `gorm:"datetime"`
 	BrandID     int             `gorm:"type:int"`
-	Brand       ProductBrand    `gorm:"foreignKey:BrandID"`
+	Brand       ProductBrand    `gorm:"foreignKey:BrandID" json:"-"`
 	CategoryID  int             `gorm:"type:int"`
-	Category    ProductCategory `gorm:"foreignKey:CategoryID"`
+	Category    ProductCategory `gorm:"foreignKey:CategoryID" json:"-"`
 }
