@@ -23,11 +23,11 @@ func NewDatabase(dsn string) (*Database, error) {
 func (d *Database) Migrate() error {
 	return d.db.AutoMigrate(
 		&models.User{},
+		&models.Cart{},
+		&models.CartItem{},
 		&models.Product{},
 		&models.ProductCategory{},
 		&models.ProductBrand{},
-		&models.Cart{},
-		&models.CartItem{},
 		&models.Order{},
 		&models.OrderItem{},
 	)

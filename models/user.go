@@ -8,4 +8,6 @@ type User struct {
 	Password  string    `gorm:"varchar"`
 	Email     string    `gorm:"varchar"`
 	CreatedAt time.Time `gorm:"datetime"`
+	Carts     []Cart
+	Orders    []Order
 }
