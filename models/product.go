@@ -7,6 +7,6 @@ type Product struct {
 	Name        string    `gorm:"varchar"`
 	Description string    `gorm:"text"`
 	Price       float64   `gorm:"decimal"`
+	Image       string    `gorm:"text"`
 	CreatedAt   time.Time `gorm:"datetime"`
-	UpdatedAt   time.Time `gorm:"datetime"`
 }
