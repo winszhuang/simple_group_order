@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"simple_group_order/utils"
+	"strconv"
 	"strings"
 )
 
@@ -42,6 +43,8 @@ func Authorize() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userId", claims["userId"])
+		userIdStr := claims["userId"].(string)
+		userId, _ := strconv.Atoi(userIdStr)
+		c.Set("userId", userId)
 	}
 }

@@ -17,5 +17,5 @@ type CartItem struct {
 	CreatedAt  time.Time `gorm:"datetime"`
 	UpdatedAt  time.Time `gorm:"datetime"`
 	ProductID  int
-	Product    Product
+	Product    Product `json:"-"`
 }
