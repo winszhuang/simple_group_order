@@ -1,9 +1,10 @@
-package tasks
+package main
 
 import (
 	"encoding/json"
 	"gorm.io/gorm"
 	"os"
+	"simple_group_order/db"
 	"simple_group_order/models"
 )
 
@@ -28,15 +29,32 @@ type Product struct {
 	Images             []string `json:"images"`
 }
 
-func UpdateProductsToDB(db *gorm.DB) {
-	source, err := os.ReadFile("products.json")
+func main() {
+	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+	database, err := db.NewDatabase(dsn)
 	if err != nil {
 		panic(err)
+	}
+	if err = database.Migrate(); err != nil {
+		panic(err)
+	}
+	defer database.Close()
+
+	err = updateProductsToDB(database.GetDB())
+	if err != nil {
+		panic(err)
+	}
+}
+
+func updateProductsToDB(db *gorm.DB) error {
+	source, err := os.ReadFile("products.json")
+	if err != nil {
+		return err
 	}
 
 	var data Data
 	if err := json.Unmarshal(source, &data); err != nil {
-		panic(err)
+		return err
 	}
 
 	for _, product := range data.Products {
@@ -54,9 +72,11 @@ func UpdateProductsToDB(db *gorm.DB) {
 
 		result := db.Create(&p)
 		if result.Error != nil {
-			panic(result.Error)
+			return result.Error
 		}
 	}
+
+	return nil
 }
 
 func getOrCreateBrand(db *gorm.DB, brandName string) *models.ProductBrand {
@@ -70,7 +90,7 @@ func getOrCreateBrand(db *gorm.DB, brandName string) *models.ProductBrand {
 
 func getOrCreateCategory(db *gorm.DB, categoryName string) *models.ProductCategory {
 	var brand models.ProductCategory
-	db.Where("name = ?", categoryName).FirstOrCreate(&brand, models.ProductBrand{
+	db.Where("name = ?", categoryName).FirstOrCreate(&brand, models.ProductCategory{
 		Name:        categoryName,
 		Description: "",
 	})
