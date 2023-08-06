@@ -33,10 +33,6 @@ func (d *Database) Migrate() error {
 	)
 }
 
-func (d *Database) Close() {
-	d.Close()
-}
-
 func (d *Database) GetDB() *gorm.DB {
 	return d.db
 }

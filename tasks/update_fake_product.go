@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"gorm.io/gorm"
 	"os"
 	"simple_group_order/db"
@@ -30,7 +31,7 @@ type Product struct {
 }
 
 func main() {
-	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:root@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
 	database, err := db.NewDatabase(dsn)
 	if err != nil {
 		panic(err)
@@ -38,16 +39,17 @@ func main() {
 	if err = database.Migrate(); err != nil {
 		panic(err)
 	}
-	defer database.Close()
 
 	err = updateProductsToDB(database.GetDB())
 	if err != nil {
 		panic(err)
+	} else {
+		fmt.Println("更新假資料成功")
 	}
 }
 
 func updateProductsToDB(db *gorm.DB) error {
-	source, err := os.ReadFile("products.json")
+	source, err := os.ReadFile("tasks/products.json")
 	if err != nil {
 		return err
 	}
@@ -58,8 +60,14 @@ func updateProductsToDB(db *gorm.DB) error {
 	}
 
 	for _, product := range data.Products {
-		brand := getOrCreateBrand(db, product.Brand)
-		category := getOrCreateCategory(db, product.Category)
+		brand, err := getOrCreateBrand(db, product.Brand)
+		if err != nil {
+			return err
+		}
+		category, err := getOrCreateCategory(db, product.Category)
+		if err != nil {
+			return err
+		}
 
 		p := models.Product{
 			Name:        product.Title,
@@ -70,29 +78,33 @@ func updateProductsToDB(db *gorm.DB) error {
 			CategoryID:  category.ProductCategoryID,
 		}
 
-		result := db.Create(&p)
-		if result.Error != nil {
-			return result.Error
+		err = db.Create(&p).Error
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func getOrCreateBrand(db *gorm.DB, brandName string) *models.ProductBrand {
+func getOrCreateBrand(db *gorm.DB, brandName string) (*models.ProductBrand, error) {
 	var brand models.ProductBrand
-	db.Where("name = ?", brandName).FirstOrCreate(&brand, models.ProductBrand{
+	if err := db.Where("name = ?", brandName).FirstOrCreate(&brand, models.ProductBrand{
 		Name:        brandName,
 		Description: "",
-	})
-	return &brand
+	}).Error; err != nil {
+		return nil, err
+	}
+	return &brand, nil
 }
 
-func getOrCreateCategory(db *gorm.DB, categoryName string) *models.ProductCategory {
+func getOrCreateCategory(db *gorm.DB, categoryName string) (*models.ProductCategory, error) {
 	var brand models.ProductCategory
-	db.Where("name = ?", categoryName).FirstOrCreate(&brand, models.ProductCategory{
+	if err := db.Where("name = ?", categoryName).FirstOrCreate(&brand, models.ProductCategory{
 		Name:        categoryName,
 		Description: "",
-	})
-	return &brand
+	}).Error; err != nil {
+		return nil, err
+	}
+	return &brand, nil
 }
