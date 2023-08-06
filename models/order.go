@@ -15,6 +15,7 @@ type OrderItem struct {
 	OrderItemID int       `gorm:"primary_key;auto_increment"`
 	OrderID     int       `gorm:"type:int"`
 	Quantity    int       `gorm:"int"`
+	Price       float64   `gorm:"decimal"`
 	CreatedAt   time.Time `gorm:"datetime"`
 	UpdatedAt   time.Time `gorm:"datetime"`
 	ProductID   int
