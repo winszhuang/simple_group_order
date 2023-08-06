@@ -262,9 +262,73 @@ func (cc *CartController) EmptyCartData(c *gin.Context) {
 }
 
 func (cc *CartController) Checkout(c *gin.Context) {
-	// todo
+	data, _ := c.Get("cartData")
+	cartData := data.(types.CartData)
+
+	tx := cc.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "結帳失敗",
+				"error":   r.(error).Error(),
+			})
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		panic(err)
+	}
+
+	order := models.Order{UserID: cartData.UserID}
+	if err := tx.Create(&order).Error; err != nil {
+		panic(err)
+	}
+
+	var totalPrice float64
+	var orderItems []models.OrderItem
+	for _, item := range cartData.Items {
+		product := models.Product{}
+		if err := tx.First(&product, item.ProductID).Error; err != nil {
+			panic(err)
+		}
+
+		orderItem := models.OrderItem{
+			OrderID:   order.OrderID,
+			Quantity:  item.Quantity,
+			Price:     product.Price,
+			ProductID: product.ProductID,
+		}
+		if err := tx.Create(&orderItem).Error; err != nil {
+			panic(err)
+		}
+
+		orderItems = append(orderItems, orderItem)
+
+		// 更新總價
+		totalPrice = totalPrice + product.Price*float64(item.Quantity)
+	}
+
+	// 更新order的總價錢
+	if err := tx.Model(&order).Update("total_price", totalPrice).Error; err != nil {
+		panic(err)
+	}
+
+	// 刪除不需要的購物車和購物車品項
+	if err := tx.Where("cart_id = ?", cartData.CartID).Delete(&models.CartItem{}).Error; err != nil {
+		panic(err)
+	}
+	if err := tx.Delete(&models.Cart{}, cartData.CartID).Error; err != nil {
+		panic(err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		panic(err)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "ok",
+		"message":    "結帳成功!!",
+		"order":      order,
+		"orderItems": orderItems,
 	})
-	return
 }
