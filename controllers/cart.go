@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -311,6 +312,21 @@ func (cc *CartController) Checkout(c *gin.Context) {
 
 	// 更新order的總價錢
 	if err := tx.Model(&order).Update("total_price", totalPrice).Error; err != nil {
+		panic(err)
+	}
+
+	// 更新使用者餘額
+	user := models.User{}
+	if err := tx.First(&user, cartData.UserID).Error; err != nil {
+		panic(err)
+	}
+
+	newBalance := user.Balance - totalPrice
+	if newBalance < 0 {
+		panic(errors.New("餘額不足!!"))
+	}
+
+	if err := tx.Model(user).Update("balance", newBalance).Error; err != nil {
 		panic(err)
 	}
 
